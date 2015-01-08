@@ -25,8 +25,10 @@ void MRMain::setup()
 	TCCR3B |= (1 << CS32); //prescaler 256
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
 	
-	//stepper motor test
-    stepperMotor.initStepperMotor(200,5,4); 
+	//setup serial port
+	Serial.begin(9600);
+	inputStringComplete = false;
+	inputString = "";
 }
 
 /** 
@@ -35,10 +37,93 @@ void MRMain::setup()
  */
 void MRMain::loop()
 {
-	stepperMotor.setSpeed(4); //revolve 4 times per minute
-	stepperMotor.enableStepping();
-	delay(10000); // do it for 10 seconds
-	stepperMotor.disableStepping();
+	
+	while (Serial.available()) {
+		// get the new byte:
+		char inChar = (char)Serial.read();
+		// add it to the inputString:
+		inputString += inChar;
+		// if the incoming character is a newline, set a flag
+		// so the main loop can do something about it:
+		if (inChar == '\n') {
+			inputStringComplete = true;
+		}
+	}
+	
+	if(inputStringComplete){
+		//if its a command
+		if(inputString[0] == '$'){
+			parseCommand();		
+			inputString = "";
+			inputStringComplete = false;
+		}
+	}
+	
+
+}
+
+void MRMain::parseCommand(){
+	char commandType;
+	commandType = inputString[1];
+	switch(commandType){
+		case 'R':
+			processRappelCommand();
+			break;
+		case 'I':
+			processImageCommand();
+			break;
+		case 'D':
+			processDriveCommand();
+			break;
+		default:
+			processStatusRequest();
+			break;
+	}
+}
+
+void MRMain::processDriveCommand(){
+	
+	/*delay(500);
+	for(int i = 0;i<4;i++){
+	digitalWrite(ALIVE_LED_PIN,LOW);
+	delay(250);
+	digitalWrite(ALIVE_LED_PIN,HIGH);
+	delay(250);
+	}*/
+}
+	
+
+void MRMain::processImageCommand(){
+	
+	/*delay(500);
+	for(int i = 0;i<3;i++){
+		digitalWrite(ALIVE_LED_PIN,LOW);
+		delay(250);
+		digitalWrite(ALIVE_LED_PIN,HIGH);
+		delay(250);
+	}*/
+}
+
+void MRMain::processRappelCommand(){
+
+	/*delay(500);
+	for(int i = 0;i<4;i++){
+	digitalWrite(ALIVE_LED_PIN,LOW);
+	delay(250);
+	digitalWrite(ALIVE_LED_PIN,HIGH);
+	delay(250);
+	}*/
+}
+
+void MRMain::processStatusRequest(){
+	
+	/*delay(500);
+	for(int i = 0;i<5;i++){
+	digitalWrite(ALIVE_LED_PIN,LOW);
+	delay(250);
+	digitalWrite(ALIVE_LED_PIN,HIGH);
+	delay(250);
+	}*/
 }
 
 ISR(TIMER3_OVF_vect){
