@@ -22,6 +22,7 @@ class MRMain
  private:
 	 String inputString;
 	 boolean inputStringComplete;
+	 char inChar;
 
  public:
     /** 

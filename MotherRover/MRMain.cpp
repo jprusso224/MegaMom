@@ -29,6 +29,7 @@ void MRMain::setup()
 	Serial.begin(9600);
 	inputStringComplete = false;
 	inputString = "";
+	inChar = '0';
 }
 
 /** 
@@ -38,9 +39,9 @@ void MRMain::setup()
 void MRMain::loop()
 {
 	
-	while (Serial.available()) {
+	while (Serial.available() > 0) {
 		// get the new byte:
-		char inChar = (char)Serial.read();
+		inChar = (char)Serial.read();
 		// add it to the inputString:
 		inputString += inChar;
 		// if the incoming character is a newline, set a flag
@@ -49,11 +50,14 @@ void MRMain::loop()
 			inputStringComplete = true;
 		}
 	}
+	delay(250); // Doesn't work without this. My guess is it gives the serial buffer time to fill if the message isn't complete.
 	
 	if(inputStringComplete){
-		//if its a command
+		//if its a command	
 		if(inputString[0] == '$'){
+			TIMSK3 |= (0 << TOIE3); //disable overflow interrupt
 			parseCommand();		
+			TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
 			inputString = "";
 			inputStringComplete = false;
 		}
@@ -61,7 +65,9 @@ void MRMain::loop()
 	
 
 }
-
+/**
+ * Uses a switch statement to determine the type of command and proceeds to call the corresponding process function.                                                     
+ */
 void MRMain::parseCommand(){
 	char commandType;
 	commandType = inputString[1];
@@ -81,49 +87,76 @@ void MRMain::parseCommand(){
 	}
 }
 
+/**
+ * Blinks and LED 5 times and sends the drive acknowledgment to the GS                                                    
+ */
 void MRMain::processDriveCommand(){
 	
-	/*delay(500);
-	for(int i = 0;i<4;i++){
-	digitalWrite(ALIVE_LED_PIN,LOW);
-	delay(250);
-	digitalWrite(ALIVE_LED_PIN,HIGH);
-	delay(250);
-	}*/
+		delay(500);
+		for(int i = 0;i<5;i++){
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,HIGH);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+		}
+		Serial.print("$DP\n");
+		Serial.flush();
 }
 	
-
+/**
+ * Blinks and LED 4 times and sends the image acknowledgment to the GS                                                    
+ */
 void MRMain::processImageCommand(){
 	
-	/*delay(500);
-	for(int i = 0;i<3;i++){
-		digitalWrite(ALIVE_LED_PIN,LOW);
-		delay(250);
-		digitalWrite(ALIVE_LED_PIN,HIGH);
-		delay(250);
-	}*/
+		delay(500);
+		for(int i = 0;i<4;i++){
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,HIGH);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+		}
+		Serial.print("$IP\n");
+		Serial.flush();
 }
 
+/**
+ * Blinks and LED 3 times and sends the rappel acknowledgment to the GS                                                    
+ */
 void MRMain::processRappelCommand(){
 
-	/*delay(500);
-	for(int i = 0;i<4;i++){
-	digitalWrite(ALIVE_LED_PIN,LOW);
-	delay(250);
-	digitalWrite(ALIVE_LED_PIN,HIGH);
-	delay(250);
-	}*/
+		delay(500);
+		for(int i = 0;i<3;i++){
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,HIGH);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+		}
+		Serial.print("$RP\n");
+		Serial.flush();
 }
 
+/**
+ * Blinks and LED 2 times and sends the status acknowledgment to the GS                                                    
+ */
 void MRMain::processStatusRequest(){
 	
-	/*delay(500);
-	for(int i = 0;i<5;i++){
-	digitalWrite(ALIVE_LED_PIN,LOW);
-	delay(250);
-	digitalWrite(ALIVE_LED_PIN,HIGH);
-	delay(250);
-	}*/
+		delay(500);
+		for(int i = 0;i<2;i++){
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,HIGH);
+			delay(250);
+			digitalWrite(ALIVE_LED_PIN,LOW);
+			delay(250);
+		}
+		Serial.print("$SP\n");
+		Serial.flush();
 }
 
 ISR(TIMER3_OVF_vect){
