@@ -17,6 +17,7 @@
 #endif
 
 #define STEPPIN 11
+#define CLOCKSPEED 16000000
 
 class StepperMotor
 {

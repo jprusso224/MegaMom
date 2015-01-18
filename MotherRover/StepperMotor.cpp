@@ -34,6 +34,8 @@ void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
 	OCR1A = 0;
 	// turn on CTC mode (no prescaler for timer)
 	TCCR1B |= (1 << WGM12);
+	TCCR1B |= (1 << CS10);
+	TCCR1B |= (1 << CS12);
 	// initially the CTC interrupt must be disabled
 	TIMSK1 |= (0 << OCIE1A);
 	// set the interrupt to toggle OCA1(located on pin 11)
@@ -50,7 +52,9 @@ void StepperMotor::setSpeed(int RPM){
 	speed = RPM;
 	//Convert rpm into a value for OCR1A
 	int stepsPerSec = RPM*stepsPerRevolution/60;
-	OCR1A = (16*10^16)/(stepsPerSec) + 1;
+	long longOCR1A = CLOCKSPEED/1024/stepsPerSec/2;
+	OCR1A = int(longOCR1A);
+	
 }
 
 void StepperMotor::setDirection(int dir){
