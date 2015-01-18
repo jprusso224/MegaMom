@@ -25,41 +25,48 @@ void MRMain::setup()
 	TCCR3B |= (1 << CS32); //prescaler 256
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
 	
+	///Motor
+	//stepperMotor.initStepperMotor(200,8,7);
+	//stepperMotor.setSpeed(4);
+	//stepperMotor.enableStepping();
+	
 	//setup serial port
-	Serial.begin(9600);
-	inputStringComplete = false;
-	inputString = "";
+	Serial.begin(MR_GS_BAUD);
+	Serial3.begin(MR_CR_BAUD);
+	gsInputStringComplete = false;
+	gsInputString = "";
+	crInputStringComplete = false;
+	crInputString = "";
 	inChar = '0';
 }
 
 /** 
  * Main loop function for Mr Arduino
- * As of now it is just testing the stepper motor class
+ * 
  */
 void MRMain::loop()
 {
 	
 	while (Serial.available() > 0) {
-		// get the new byte:
+		// get the new byte
 		inChar = (char)Serial.read();
-		// add it to the inputString:
-		inputString += inChar;
-		// if the incoming character is a newline, set a flag
-		// so the main loop can do something about it:
+		// add it to the inputString
+		gsInputString += inChar;
+		// if the incoming character is a newline, set a flag (end of command)
 		if (inChar == '\n') {
-			inputStringComplete = true;
+			gsInputStringComplete = true;
 		}
 	}
 	delay(250); // Doesn't work without this. My guess is it gives the serial buffer time to fill if the message isn't complete.
 	
-	if(inputStringComplete){
+	if(gsInputStringComplete){
 		//if its a command	
-		if(inputString[0] == '$'){
+		if(gsInputString[0] == '$'){
 			TIMSK3 |= (0 << TOIE3); //disable overflow interrupt
 			parseCommand();		
 			TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
-			inputString = "";
-			inputStringComplete = false;
+			gsInputString = "";
+			gsInputStringComplete = false;
 		}
 	}
 	
@@ -70,7 +77,7 @@ void MRMain::loop()
  */
 void MRMain::parseCommand(){
 	char commandType;
-	commandType = inputString[1];
+	commandType = gsInputString[1];
 	switch(commandType){
 		case 'R':
 			processRappelCommand();
@@ -92,15 +99,7 @@ void MRMain::parseCommand(){
  */
 void MRMain::processDriveCommand(){
 	
-		delay(500);
-		for(int i = 0;i<5;i++){
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,HIGH);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-		}
+		blinkLED(5);
 		Serial.print("$DP\n");
 		Serial.flush();
 }
@@ -110,15 +109,7 @@ void MRMain::processDriveCommand(){
  */
 void MRMain::processImageCommand(){
 	
-		delay(500);
-		for(int i = 0;i<4;i++){
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,HIGH);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-		}
+		blinkLED(4);
 		Serial.print("$IP\n");
 		Serial.flush();
 }
@@ -128,16 +119,30 @@ void MRMain::processImageCommand(){
  */
 void MRMain::processRappelCommand(){
 
-		delay(500);
-		for(int i = 0;i<3;i++){
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,HIGH);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
+		//LED Verification (make this a function)
+		blinkLED(3);
+		//Send Command to CR and wait for acknowledgment 
+		Serial3.print(gsInputString);
+		
+		while(!Serial3.available()){
+			//Wait here
 		}
-		Serial.print("$RP\n");
+		delay(250); //Delay so serial buffer can fill
+		//receive acknowledgment
+		while(Serial3.available() > 0){
+			// get the new byte:
+			inChar = (char)Serial3.read();
+			// add it to the inputString:
+			crInputString += inChar;
+			// if the incoming character is a newline, set a flag
+			// so the main loop can do something about it:
+			if (inChar == '\n') {
+				crInputStringComplete = true;
+			}
+		}
+		
+		//Send acknowledgment to GS
+		Serial.print(crInputString);
 		Serial.flush();
 }
 
@@ -146,17 +151,31 @@ void MRMain::processRappelCommand(){
  */
 void MRMain::processStatusRequest(){
 	
-		delay(500);
-		for(int i = 0;i<2;i++){
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,HIGH);
-			delay(250);
-			digitalWrite(ALIVE_LED_PIN,LOW);
-			delay(250);
-		}
+		blinkLED(2);
 		Serial.print("$SP\n");
 		Serial.flush();
+}
+
+
+/**
+ * Blink LED n number of times.                                                    
+ */
+void MRMain::blinkLED(int num){
+	delay(500);
+	for(int i = 0;i<num;i++){
+		digitalWrite(ALIVE_LED_PIN,LOW);
+		delay(250);
+		digitalWrite(ALIVE_LED_PIN,HIGH);
+		delay(250);
+		digitalWrite(ALIVE_LED_PIN,LOW);
+		delay(250);
+	}
+}
+
+int MRMain::readBatteryVoltage(){
+	// Need battery circuit 
+	int result = analogRead(BATTERY_PIN);
+	return result/BATTERY_INPUT_RESOLUTION; //volt/(volts/volt)
 }
 
 ISR(TIMER3_OVF_vect){
@@ -169,7 +188,8 @@ ISR(TIMER3_OVF_vect){
  * Calls the interrupt handler function used to physically drive the stepper motor                                                     
  */
 ISR(TIMER1_COMPA_vect){
-	stepperMotor.OCR1A_ISR();
+	
+	//stepperMotor.OCR1A_ISR();
 }
 
 MRMain mrMain;

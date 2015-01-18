@@ -1,4 +1,4 @@
-/*
+/**
  * MRMain.h
  *
  * Created: 1/5/2015 
@@ -20,9 +20,17 @@
 class MRMain
 {
  private:
-	 String inputString;
-	 boolean inputStringComplete;
+	 String gsInputString;
+	 boolean gsInputStringComplete;
+	 String crInputString;
+	 boolean crInputStringComplete;
+	 
 	 char inChar;
+	 
+	 /**
+	  * Battery                                                    
+	  */
+	 int readBatteryVoltage();
 
  public:
     /** 
@@ -59,6 +67,13 @@ class MRMain
 	 * Relays command to CR and waits for acknowledgment. Then attaches MR status and returns to GS                                            
 	 */
 	void processStatusRequest();
+	
+	/**
+	 * Blink LED   
+	 *
+	 * @param num number of times to blink.                                                 
+	 */
+	void blinkLED(int num);
 	
 };
 

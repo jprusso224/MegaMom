@@ -1,0 +1,96 @@
+\hypertarget{class_m_r_main}{\section{M\+R\+Main Class Reference}
+\label{class_m_r_main}\index{M\+R\+Main@{M\+R\+Main}}
+}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{class_m_r_main_af8d471c0d97b90ff2aaa3c77053a2337}{setup} ()
+\item 
+void \hyperlink{class_m_r_main_a1a761c8eb0d7712bcc4a45913b261b39}{loop} ()
+\item 
+void \hyperlink{class_m_r_main_ae69d7b5278a0aacc6b40b01c1b77f85c}{parse\+Command} ()
+\item 
+void \hyperlink{class_m_r_main_a958e899fbe257392b36413e3013fcaf3}{process\+Image\+Command} ()
+\item 
+void \hyperlink{class_m_r_main_a81c5ad84f0f7605f626bf788a2ad3466}{process\+Drive\+Command} ()
+\item 
+void \hyperlink{class_m_r_main_acc023894b98b05332d71358de7d39983}{process\+Rappel\+Command} ()
+\item 
+void \hyperlink{class_m_r_main_af596710c6adfe5a46d84f082a9ff036a}{process\+Status\+Request} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_m_r_main_a1a761c8eb0d7712bcc4a45913b261b39}{\index{M\+R\+Main@{M\+R\+Main}!loop@{loop}}
+\index{loop@{loop}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{loop}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::loop (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_a1a761c8eb0d7712bcc4a45913b261b39}
+Main loop function for Mr Arduino
+
+Main loop function for Mr Arduino As of now it is just testing the stepper motor class \hypertarget{class_m_r_main_ae69d7b5278a0aacc6b40b01c1b77f85c}{\index{M\+R\+Main@{M\+R\+Main}!parse\+Command@{parse\+Command}}
+\index{parse\+Command@{parse\+Command}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{parse\+Command}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::parse\+Command (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_ae69d7b5278a0aacc6b40b01c1b77f85c}
+Parses an incoming command to determine which action to take
+
+Uses a switch statement to determine the type of command and proceeds to call the corresponding process function. \hypertarget{class_m_r_main_a81c5ad84f0f7605f626bf788a2ad3466}{\index{M\+R\+Main@{M\+R\+Main}!process\+Drive\+Command@{process\+Drive\+Command}}
+\index{process\+Drive\+Command@{process\+Drive\+Command}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{process\+Drive\+Command}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::process\+Drive\+Command (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_a81c5ad84f0f7605f626bf788a2ad3466}
+Unspool tether and then relay command to C\+R
+
+Blinks and L\+E\+D 5 times and sends the drive acknowledgment to the G\+S \hypertarget{class_m_r_main_a958e899fbe257392b36413e3013fcaf3}{\index{M\+R\+Main@{M\+R\+Main}!process\+Image\+Command@{process\+Image\+Command}}
+\index{process\+Image\+Command@{process\+Image\+Command}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{process\+Image\+Command}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::process\+Image\+Command (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_a958e899fbe257392b36413e3013fcaf3}
+Relays command to C\+R and waits for acknowledgment
+
+Blinks and L\+E\+D 4 times and sends the image acknowledgment to the G\+S \hypertarget{class_m_r_main_acc023894b98b05332d71358de7d39983}{\index{M\+R\+Main@{M\+R\+Main}!process\+Rappel\+Command@{process\+Rappel\+Command}}
+\index{process\+Rappel\+Command@{process\+Rappel\+Command}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{process\+Rappel\+Command}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::process\+Rappel\+Command (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_acc023894b98b05332d71358de7d39983}
+Unspool/spool tether
+
+Blinks and L\+E\+D 3 times and sends the rappel acknowledgment to the G\+S \hypertarget{class_m_r_main_af596710c6adfe5a46d84f082a9ff036a}{\index{M\+R\+Main@{M\+R\+Main}!process\+Status\+Request@{process\+Status\+Request}}
+\index{process\+Status\+Request@{process\+Status\+Request}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{process\+Status\+Request}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::process\+Status\+Request (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_af596710c6adfe5a46d84f082a9ff036a}
+Relays command to C\+R and waits for acknowledgment. Then attaches M\+R status and returns to G\+S
+
+Blinks and L\+E\+D 2 times and sends the status acknowledgment to the G\+S \hypertarget{class_m_r_main_af8d471c0d97b90ff2aaa3c77053a2337}{\index{M\+R\+Main@{M\+R\+Main}!setup@{setup}}
+\index{setup@{setup}!M\+R\+Main@{M\+R\+Main}}
+\subsubsection[{setup}]{\setlength{\rightskip}{0pt plus 5cm}void M\+R\+Main\+::setup (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_m_r_main_af8d471c0d97b90ff2aaa3c77053a2337}
+Initialize function for the M\+R Arduino
+
+M\+R\+Main.\+cpp
+
+M\+R Arduino Main Program handled by the main Arduino sketch.
+
+Created\+: 1/5/2015 Author\+: John Russo Last Updated\+: 1/8/2015 by John Russo Initialize function for the M\+R Arduino As of now it is just testing the stepper motor class 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+John Russo/\+Documents/\+Atmel Studio/6.\+2/\+Mega\+Mom/\+Mother\+Rover/M\+R\+Main.\+h\item 
+C\+:/\+Users/\+John Russo/\+Documents/\+Atmel Studio/6.\+2/\+Mega\+Mom/\+Mother\+Rover/M\+R\+Main.\+cpp\end{DoxyCompactItemize}
