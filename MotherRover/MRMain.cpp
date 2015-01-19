@@ -5,7 +5,11 @@
  *
  * Created: 1/5/2015 
  * Author: John Russo
- * Last Updated: 1/8/2015 by John Russo
+ *
+ * UPDATE LOG ================================================================================================
+ * Update 1/8/2015 by John Russo: Serial communication with GS
+ * Update 1/17/2015 by John Russo: Serial communication with CR
+ * ===========================================================================================================
  */ 
 
 #include "MRMain.h"
@@ -108,10 +112,29 @@ void MRMain::processDriveCommand(){
  * Blinks and LED 4 times and sends the image acknowledgment to the GS                                                    
  */
 void MRMain::processImageCommand(){
-	
+		boolean imageRelayed = false;
+		char imageChar = 0;
 		blinkLED(4);
-		Serial.print("$IP\n");
-		Serial.flush();
+		
+		//Relay command to CR
+		Serial3.print(gsInputString);
+		Serial3.flush();
+		
+		//Wait for Image to be received. 
+		while(!Serial3.available()){
+			//Just keep waiting for now
+		}
+		
+		//Stream serial data to GS until finished with image
+		while(!imageRelayed){
+			if(Serial3.available() > 0){
+				imageChar = Serial3.read();
+				if(imageChar == '\n'){
+					imageRelayed = true;
+				}
+				Serial.print(imageChar);
+			}
+		}
 }
 
 /**
