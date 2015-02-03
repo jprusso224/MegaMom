@@ -12,9 +12,9 @@
 /*MOTOR*/
 #define GEAR_RATIO 160
 #define MAXSPEED 25 //RPM
-#define CCW = 1
-#define CW = 0;
-#define GAIN = 5; //Need to determine
+#define CCW  1
+#define CW 0;
+#define GAIN 5; //Need to determine
 
 /*COMMUNICATION*/
 #define MR_CR_BAUD 115200

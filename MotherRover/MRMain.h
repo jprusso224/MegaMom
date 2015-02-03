@@ -70,6 +70,11 @@ class MRMain
 	 */
 	void processStatusRequest();
 	
+    /**
+	 * Reels in the CR using the stepper motor                                           
+	 */
+	void processReturnCommand();
+	
 	/**
 	 * Blink LED   
 	 *

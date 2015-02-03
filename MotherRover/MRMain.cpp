@@ -91,7 +91,11 @@ void MRMain::parseCommand(){
 	commandType = gsInputString[1];
 	switch(commandType){
 		case 'R':
-			processRappelCommand();
+			if(gsInputString[2] == '0'){
+				processRappelCommand();
+			}else{
+				processReturnCommand();
+			}
 			break;
 		case 'I':
 			processImageCommand();
@@ -153,9 +157,10 @@ void MRMain::processRappelCommand(){
 		String targetString = "";
 		int rappelDistance = 0;
 		int targetDepth = 0;
-		char fromCR = '';
+		char fromCR = NULL;
 		String crDepthString = "";
 		int motorSpeed = 0;
+		
 
 		//LED Verification (visual)
 		blinkLED(3);
@@ -163,10 +168,10 @@ void MRMain::processRappelCommand(){
 		//Extract depth from command and set target
 		targetString = gsInputString.substring(4,6);
 		rappelDistance = targetString.toInt();
-		if(gsInputString(3) == '-'){
+		if(gsInputString[3] == '-'){
 			rappelDistance = -rappelDistance;
 			stepperMotor.setDirection(0);
-		}else
+		}else{
 			stepperMotor.setDirection(1);
 		}
 		targetDepth = currentDepth + rappelDistance;
@@ -196,10 +201,12 @@ void MRMain::processRappelCommand(){
 			currentDepth = crDepthString.toInt();
 		    
 			//Check to see if you even need to set stepper motor
-			if(currentDepth == targetDepth) break;
+			if(currentDepth == targetDepth){
+				break;
+			}
 			
 			//Set the stepper motor speed
-			motorSpeed = GAIN*(targetDepth - currentDepth);
+			motorSpeed = (targetDepth - currentDepth)*GAIN;
 			stepperMotor.setSpeed(motorSpeed);
 		}
 		//Disable stepper motor
@@ -209,6 +216,13 @@ void MRMain::processRappelCommand(){
 		Serial.print(ACKNOWLEDGE_RAPPEL);
 		Serial.flush();
 
+}
+
+/**
+ * Uses the stepper motor to reel in the CR. Step count ensures all tether is reeled in.                                                    
+ */
+void MRMain::processReturnCommand(){
+	//REEL IN THE CR
 }
 
 /**
