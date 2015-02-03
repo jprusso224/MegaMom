@@ -27,6 +27,8 @@ class MRMain
 	 
 	 char inChar;
 	 
+	 int currentDepth;
+	 
 	 /**
 	  * Battery                                                    
 	  */

@@ -9,6 +9,7 @@
  * UPDATE LOG ================================================================================================
  * Update 1/8/2015 by John Russo: Serial communication with GS
  * Update 1/17/2015 by John Russo: Serial communication with CR
+ * Update 2/2/2015 by John Russo: processRappelCommand() implemented. Still need gain. 
  * ===========================================================================================================
  */ 
 
@@ -30,9 +31,14 @@ void MRMain::setup()
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
 	
 	///Motor
-	//stepperMotor.initStepperMotor(200,8,7);
-	//stepperMotor.setSpeed(4);
-	//stepperMotor.enableStepping();
+	stepperMotor.initStepperMotor(200,8,7);
+	stepperMotor.setSpeed(1);
+	stepperMotor.enableStepping();
+	digitalWrite(7,HIGH);
+	digitalWrite(8,HIGH);
+	
+	//Rappelling
+	currentDepth = 0; //cm
 	
 	//setup serial port
 	Serial.begin(MR_GS_BAUD);
@@ -42,6 +48,7 @@ void MRMain::setup()
 	crInputStringComplete = false;
 	crInputString = "";
 	inChar = '0';
+	
 }
 
 /** 
@@ -141,32 +148,67 @@ void MRMain::processImageCommand(){
  * Blinks and LED 3 times and sends the rappel acknowledgment to the GS                                                    
  */
 void MRMain::processRappelCommand(){
+		
+		//Declare local variables
+		String targetString = "";
+		int rappelDistance = 0;
+		int targetDepth = 0;
+		char fromCR = '';
+		String crDepthString = "";
+		int motorSpeed = 0;
 
-		//LED Verification (make this a function)
+		//LED Verification (visual)
 		blinkLED(3);
-		//Send Command to CR and wait for acknowledgment 
-		Serial3.print(gsInputString);
 		
-		while(!Serial3.available()){
-			//Wait here
+		//Extract depth from command and set target
+		targetString = gsInputString.substring(4,6);
+		rappelDistance = targetString.toInt();
+		if(gsInputString(3) == '-'){
+			rappelDistance = -rappelDistance;
+			stepperMotor.setDirection(0);
+		}else
+			stepperMotor.setDirection(1);
 		}
-		delay(250); //Delay so serial buffer can fill
-		//receive acknowledgment
-		while(Serial3.available() > 0){
-			// get the new byte:
-			inChar = (char)Serial3.read();
-			// add it to the inputString:
-			crInputString += inChar;
-			// if the incoming character is a newline, set a flag
-			// so the main loop can do something about it:
-			if (inChar == '\n') {
-				crInputStringComplete = true;
+		targetDepth = currentDepth + rappelDistance;
+		
+		//Set up the rest of stepper motor
+		stepperMotor.setSpeed(motorSpeed); //This will currently cause a divide by zero error!!!
+		stepperMotor.enableStepping();
+		
+		// Enter rappelling loop
+		while(currentDepth != targetDepth){
+			
+			//Get depth from CR
+			Serial3.print(GET_DEPTH);
+			while(!Serial3.available()){
+				//Wait here for depth from CR
 			}
+			delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
+			while(Serial3.available() > 0){
+				fromCR = (char)Serial3.read();
+				crInputString += fromCR;
+				if (fromCR == '\n') {
+					crInputStringComplete = true;
+				}
+			}
+			//Extract CR depth from 
+			crDepthString = crInputString.substring(3,5);
+			currentDepth = crDepthString.toInt();
+		    
+			//Check to see if you even need to set stepper motor
+			if(currentDepth == targetDepth) break;
+			
+			//Set the stepper motor speed
+			motorSpeed = GAIN*(targetDepth - currentDepth);
+			stepperMotor.setSpeed(motorSpeed);
 		}
+		//Disable stepper motor
+		stepperMotor.disableStepping();
 		
-		//Send acknowledgment to GS
-		Serial.print(crInputString);
+		//Send Acknowledgment to GC
+		Serial.print(ACKNOWLEDGE_RAPPEL);
 		Serial.flush();
+
 }
 
 /**

@@ -48,13 +48,16 @@ void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
 }
 
 void StepperMotor::setSpeed(int RPM){
+	//avoid divide by zero
+	if(RPM == 0){
+		disableStepping();
+	}
 	//update stored value
-	speed = RPM;
+	speed = RPM*GEAR_RATIO;
 	//Convert rpm into a value for OCR1A
-	int stepsPerSec = RPM*stepsPerRevolution/60;
+	long stepsPerSec = RPM*GEAR_RATIO*stepsPerRevolution/60;
 	long longOCR1A = CLOCKSPEED/1024/stepsPerSec/2;
 	OCR1A = int(longOCR1A);
-	
 }
 
 void StepperMotor::setDirection(int dir){

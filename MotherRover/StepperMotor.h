@@ -16,8 +16,9 @@
 	#include "WProgram.h"
 #endif
 
-#define STEPPIN 11
-#define CLOCKSPEED 16000000
+#include "mrconstants.h"
+
+
 
 class StepperMotor
 {
