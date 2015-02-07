@@ -38,9 +38,9 @@ class StepperMotor
 	/**
 	 * Sets the speed of the stepper motor
 	 * 
-	 * @param RPM desired speed in RPM                                                    
+	 * @param RPM desired speed in millirads/sec                                                  
 	 */
-	void setSpeed(int RPM);
+	void setSpeed(int angularSpeed);
 	
 	/**
 	 * enable motor stepping functionality                                                    
@@ -90,6 +90,7 @@ class StepperMotor
 	
  private:
 	 int stepsPerRevolution;
+	 int stepsPerRad;
 	 int direction;
 	 int speed;
      boolean enabled;

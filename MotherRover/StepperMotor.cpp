@@ -26,6 +26,9 @@ void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
 	directionPin = dirPin;
 	enablePin = enPin;
 	
+	// Convert to steps/rad so we don't have to deal with floating points in the rappel loop.
+	stepsPerRad = int(stepsPerRevolution/(2*PI));
+	
 	TCCR1A = 0;//set timer control registers to zero
 	TCCR1B = 0;//same as above
 	TCNT1  = 0;//initialize counter value to 0
@@ -47,15 +50,16 @@ void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
 	stepCount = 0;
 }
 
-void StepperMotor::setSpeed(int RPM){
-	//avoid divide by zero
-	if(RPM == 0){
+void StepperMotor::setSpeed(int angularSpeed){
+	//avoid divide by zero (may have to change this)
+	if(angularSpeed == 0){
 		disableStepping();
 	}
+	
 	//update stored value
-	speed = RPM*GEAR_RATIO;
+	speed = angularSpeed*GEAR_RATIO; // mrads/sec
 	//Convert rpm into a value for OCR1A
-	long stepsPerSec = RPM*GEAR_RATIO*stepsPerRevolution/60;
+	long stepsPerSec = (angularSpeed*GEAR_RATIO*stepsPerRad)/1000;
 	long longOCR1A = CLOCKSPEED/1024/stepsPerSec/2;
 	OCR1A = int(longOCR1A);
 }

@@ -159,9 +159,10 @@ void MRMain::processRappelCommand(){
 		int targetDepth = 0;
 		char fromCR = NULL;
 		String crDepthString = "";
+		int desiredSpeed = 0;
 		int motorSpeed = 0;
+		int controlError = 100; //cm
 		
-
 		//LED Verification (visual)
 		blinkLED(3);
 		
@@ -170,14 +171,14 @@ void MRMain::processRappelCommand(){
 		rappelDistance = targetString.toInt();
 		if(gsInputString[3] == '-'){
 			rappelDistance = -rappelDistance;
-			stepperMotor.setDirection(0);
+			stepperMotor.setDirection(CW);
 		}else{
-			stepperMotor.setDirection(1);
+			stepperMotor.setDirection(CCW);
 		}
 		targetDepth = currentDepth + rappelDistance;
 		
 		//Set up the rest of stepper motor
-		stepperMotor.setSpeed(motorSpeed); //This will currently cause a divide by zero error!!!
+		stepperMotor.setSpeed(motorSpeed);
 		stepperMotor.enableStepping();
 		
 		// Enter rappelling loop
@@ -206,17 +207,24 @@ void MRMain::processRappelCommand(){
 			}
 			
 			//Set the stepper motor speed
-			motorSpeed = (targetDepth - currentDepth)*GAIN;
-			stepperMotor.setSpeed(motorSpeed);
+			if(currentDepth < 400){
+				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED); //constant speed
+			}else{
+				desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
+				//motorSpeed = desiredSpeed/SPOOL_RADIUS; //mrad/s
+				stepperMotor.setSpeed(desiredSpeed); //mrad/s
+			}
+			
 		}
 		//Disable stepper motor
-		stepperMotor.disableStepping();
+		stepperMotor.disableStepping();  
 		
 		//Send Acknowledgment to GC
 		Serial.print(ACKNOWLEDGE_RAPPEL);
 		Serial.flush();
 
 }
+		
 
 /**
  * Uses the stepper motor to reel in the CR. Step count ensures all tether is reeled in.                                                    
