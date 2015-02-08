@@ -10,12 +10,12 @@
 #endif
 
 /*MOTOR*/
-#define GEAR_RATIO 15
+#define GEAR_RATIO 77//15
 #define MAXSPEED 115//RPM
-#define RAPPEL_ANGULAR_SPEED 700 //mrad/s
+#define RAPPEL_ANGULAR_SPEED 5// 700 //mrad/s
 #define CCW  1
 #define CW 0
-#define GAIN //Need to determine(may not need to be a global)
+#define GAIN  5//Need to determine(may not need to be a global)
 #define SPOOL_RADIUS 3 //cm
 
 /*COMMUNICATION*/
@@ -24,7 +24,7 @@
 
 /*COMMAND STRINGS*/
 #define GET_DEPTH "$R0\n"
-#define ACKNOWLEDGE_RAPPEL "$R0P\n"
+#define ACKNOWLEDGE_RAPPEL "$RP\n"
 #define ACKNOWLEDGE_DRIVE "$DP\n"
 
 /*SERIAL DELAY CONSTANTS*/

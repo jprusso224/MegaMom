@@ -32,10 +32,8 @@ void MRMain::setup()
 	
 	///Motor
 	stepperMotor.initStepperMotor(200,8,7);
-	stepperMotor.setSpeed(1);
-	stepperMotor.enableStepping();
-	digitalWrite(7,HIGH);
-	digitalWrite(8,HIGH);
+	//digitalWrite(7,HIGH);
+	//digitalWrite(8,HIGH);
 	
 	//Rappelling
 	currentDepth = 0; //cm
@@ -167,7 +165,7 @@ void MRMain::processRappelCommand(){
 		blinkLED(3);
 		
 		//Extract depth from command and set target
-		targetString = gsInputString.substring(4,6);
+		targetString = gsInputString.substring(4,7);
 		rappelDistance = targetString.toInt();
 		if(gsInputString[3] == '-'){
 			rappelDistance = -rappelDistance;
@@ -182,7 +180,7 @@ void MRMain::processRappelCommand(){
 		stepperMotor.enableStepping();
 		
 		// Enter rappelling loop
-		while(currentDepth != targetDepth){
+		while(currentDepth < targetDepth){
 			
 			//Get depth from CR
 			Serial3.print(GET_DEPTH);
@@ -195,19 +193,25 @@ void MRMain::processRappelCommand(){
 				crInputString += fromCR;
 				if (fromCR == '\n') {
 					crInputStringComplete = true;
+					
 				}
 			}
 			//Extract CR depth from 
-			crDepthString = crInputString.substring(3,5);
+			crDepthString = crInputString.substring(3,6);
+			crInputString = "";
 			currentDepth = crDepthString.toInt();
+			Serial.print("$R0" + (String)(targetDepth - currentDepth) + "\n");
 		    
 			//Check to see if you even need to set stepper motor
-			if(currentDepth == targetDepth){
+			if(currentDepth >= targetDepth){
+				stepperMotor.setSpeed(0);
+				blinkLED(3);
+				Serial.print("Ya done goofed");
 				break;
 			}
 			
 			//Set the stepper motor speed
-			if(currentDepth < 400){
+			if(targetDepth - currentDepth  > controlError){
 				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED); //constant speed
 			}else{
 				desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
