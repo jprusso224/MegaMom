@@ -112,9 +112,60 @@ void MRMain::parseCommand(){
  */
 void MRMain::processDriveCommand(){
 	
+		String targetString = "";
+		int driveDistance = 0;
+		long int startCount = 0L;
+		long int targetCount = 0L;
+		
 		blinkLED(5);
-		Serial.print("$DP\n");
-		Serial.flush();
+	
+		/*Determine whether turning or driving*/
+		char driveType;
+		driveType = gsInputString[2];
+		
+		switch (driveType)
+		{
+			case 'L':
+				break;
+			case 'R':
+				break;
+			case 'B':
+				break;
+			default:
+				//Drive forwards
+				targetString = gsInputString.substring(4,7);
+				driveDistance = targetString.toInt();
+				startCount = stepperMotor.getStepCount();
+				
+				targetCount = startCount + long(driveDistance*200*GEAR_RATIO)/SPOOL_RADIUS/PI);
+				
+				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
+				stepperMotor.setDirection(CCW);
+				stepperMotor.enableStepping();
+				
+				while(stepperMotor.getStepCount < targetCount){
+					//Just keep stepping
+				}
+				
+				//Send command to CR
+				Serial3.print(gsInputString);
+				
+				//Wait for acknowledgment
+				while(!Serial3.available()){
+							//Wait here for depth from CR
+				}
+				delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
+				while(Serial3.available() > 0){
+					fromCR = (char)Serial3.read();
+					crInputString += fromCR;
+					if (fromCR == '\n') {
+						crInputStringComplete = true;
+					    Serial.print(crInputString);
+					    Serial.flush();
+					}
+				}
+				break;
+		}
 }
 	
 /**
@@ -206,7 +257,6 @@ void MRMain::processRappelCommand(){
 			if(currentDepth >= targetDepth){
 				stepperMotor.setSpeed(0);
 				blinkLED(3);
-				Serial.print("Ya done goofed");
 				break;
 			}
 			
