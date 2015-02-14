@@ -17,6 +17,9 @@
 #define CW 0
 #define GAIN  5//Need to determine(may not need to be a global)
 #define SPOOL_RADIUS 3 //cm
+#define STEPS_PER_REV 200
+#define MOTOR_DIR_PIN 8
+#define MOTOR_EN_PIN 7
 
 /*COMMUNICATION*/
 #define MR_CR_BAUD 115200

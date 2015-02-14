@@ -31,7 +31,7 @@ void MRMain::setup()
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
 	
 	///Motor
-	stepperMotor.initStepperMotor(200,8,7);
+	stepperMotor.initStepperMotor(STEPS_PER_REV,MOTOR_DIR_PIN,MOTOR_EN_PIN);
 	//digitalWrite(7,HIGH);
 	//digitalWrite(8,HIGH);
 	
@@ -116,6 +116,7 @@ void MRMain::processDriveCommand(){
 		int driveDistance = 0;
 		long int startCount = 0L;
 		long int targetCount = 0L;
+		char fromCR = NULL;
 		
 		blinkLED(5);
 	
@@ -137,13 +138,13 @@ void MRMain::processDriveCommand(){
 				driveDistance = targetString.toInt();
 				startCount = stepperMotor.getStepCount();
 				
-				targetCount = startCount + long(driveDistance*200*GEAR_RATIO)/SPOOL_RADIUS/PI);
+				targetCount = startCount + long((driveDistance*STEPS_PER_REV*GEAR_RATIO)/SPOOL_RADIUS/PI);
 				
 				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
 				stepperMotor.setDirection(CCW);
 				stepperMotor.enableStepping();
 				
-				while(stepperMotor.getStepCount < targetCount){
+				while(stepperMotor.getStepCount() < targetCount){
 					//Just keep stepping
 				}
 				
