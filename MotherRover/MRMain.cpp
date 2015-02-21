@@ -226,6 +226,9 @@ void MRMain::processRappelCommand(){
 			stepperMotor.setDirection(CCW);
 		}
 		targetDepth = currentDepth + rappelDistance;
+		if(targetDepth < 20){
+			targetDepth = 20;
+		}
 		
 		//Set up the rest of stepper motor
 		stepperMotor.setSpeed(motorSpeed);
