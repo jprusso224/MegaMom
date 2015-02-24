@@ -56,7 +56,11 @@ void MRMain::setup()
 void MRMain::loop()
 {
 	
+	if(Serial.available() > 0){
+		//noInterrupts();
+	}
 	while (Serial.available() > 0) {
+		
 		// get the new byte
 		inChar = (char)Serial.read();
 		// add it to the inputString
@@ -66,8 +70,9 @@ void MRMain::loop()
 			gsInputStringComplete = true;
 		}
 	}
+	//interrupts();
 	delay(250); // Doesn't work without this. My guess is it gives the serial buffer time to fill if the message isn't complete.
-	
+
 	if(gsInputStringComplete){
 		//if its a command	
 		if(gsInputString[0] == '$'){
@@ -86,6 +91,7 @@ void MRMain::loop()
  */
 void MRMain::parseCommand(){
 	char commandType;
+		//Serial.println("Command Recevied");
 	commandType = gsInputString[1];
 	switch(commandType){
 		case 'R':
@@ -202,83 +208,130 @@ void MRMain::processImageCommand(){
  * Blinks and LED 3 times and sends the rappel acknowledgment to the GS                                                    
  */
 void MRMain::processRappelCommand(){
-		
+		//Serial.println("Command Rappel!");
 		//Declare local variables
 		String targetString = "";
 		int rappelDistance = 0;
 		int targetDepth = 0;
 		char fromCR = NULL;
 		String crDepthString = "";
-		int desiredSpeed = 0;
-		int motorSpeed = 0;
-		int controlError = 100; //cm
+		int desiredSpeed = MINSPEED;
+		int motorSpeed = MINSPEED;
+		int controlError = 20; //cm
+		long serialTime0 = 0L;
+		long serialTime = 0L;
+		int counter = 0;
+		String acknowledge = "$R0P";
+		int gsDebug = 0;
 		
 		//LED Verification (visual)
-		blinkLED(3);
+		//blinkLED(3);
 		
 		//Extract depth from command and set target
 		targetString = gsInputString.substring(4,7);
 		rappelDistance = targetString.toInt();
 		if(gsInputString[3] == '-'){
 			rappelDistance = -rappelDistance;
-			stepperMotor.setDirection(CW);
-		}else{
 			stepperMotor.setDirection(CCW);
+		}else{
+			stepperMotor.setDirection(CW);
 		}
-		targetDepth = currentDepth + rappelDistance;
-		if(targetDepth < 20){
-			targetDepth = 20;
-		}
-		
+		targetDepth = currentDepth + rappelDistance - 20;
+		Serial.println("No Motor!");
 		//Set up the rest of stepper motor
 		stepperMotor.setSpeed(motorSpeed);
 		stepperMotor.enableStepping();
-		
+		//Serial.println("Motor!");
 		// Enter rappelling loop
-		while(currentDepth < targetDepth){
-			
-			//Get depth from CR
-			Serial3.print(GET_DEPTH);
-			while(!Serial3.available()){
-				//Wait here for depth from CR
-			}
-			delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
-			while(Serial3.available() > 0){
+		Serial3.print(GET_DEPTH);
+		while(!Serial3.available()){
+			//
+		}
+		while(Serial3.available() > 0){
 				fromCR = (char)Serial3.read();
 				crInputString += fromCR;
 				if (fromCR == '\n') {
 					crInputStringComplete = true;
 					
-				}
 			}
-			//Extract CR depth from 
-			crDepthString = crInputString.substring(3,6);
-			crInputString = "";
-			currentDepth = crDepthString.toInt();
-			Serial.print("$R0" + (String)(targetDepth - currentDepth) + "\n");
+		}
+		
+		crDepthString = crInputString.substring(3,6);
+		currentDepth = crDepthString.toInt();
+		Serial.println(currentDepth);
+		
+		while(currentDepth < targetDepth){
+		//	Serial.println("Looping!");
+			//Get depth from CR	
+			
+			TCCR1A &= ~(1 << COM1A0);
+			Serial3.print(GET_DEPTH);
+			TCCR1A |= (1 << COM1A0);
+				
+			serialTime0 = millis();
+			counter = 0;
+			while(!Serial3.available()){
+				//Wait here for depth from CR
+				serialTime = millis();
+				if(serialTime - serialTime0 > 2000){
+					Serial.print("Resending command to CR...\n");
+					counter++;
+					noInterrupts();
+					Serial3.print(GET_DEPTH);
+					interrupts();
+					serialTime0 = millis();
+					if(counter == 4){
+						Serial.println("Failed to communicate with CR");
+						acknowledge = "$R0F";
+						break;
+					}
+				}		
+			}
+			if(counter < 4 ){
+				//Serial.println("Distance received");
+				delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
+				if(Serial3.available() > 0){
+				}
+				while(Serial3.available() > 0){
+					fromCR = (char)Serial3.read();
+					crInputString += fromCR;
+					if (fromCR == '\n') {
+						crInputStringComplete = true;
+					
+					}
+				}
+				interrupts();
+				//Extract CR depth from 
+				crDepthString = crInputString.substring(3,6);
+				crInputString = "";
+				currentDepth = crDepthString.toInt();
+				gsDebug = targetDepth - currentDepth;
+				Serial.println(currentDepth);
 		    
-			//Check to see if you even need to set stepper motor
-			if(currentDepth >= targetDepth){
-				stepperMotor.setSpeed(0);
-				blinkLED(3);
+				//Check to see if you even need to set stepper motor
+				if(currentDepth >= targetDepth){
+					stepperMotor.setSpeed(MINSPEED);
+					break;
+				}
+			
+				//Set the stepper motor speed
+				if(targetDepth - currentDepth  > controlError){
+					stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED); //constant speed
+				}else{
+					//desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
+					//motorSpeed = desiredSpeed/SPOOL_RADIUS; //mrad/s
+					desiredSpeed = MINSPEED - ((MINSPEED - RAPPEL_ANGULAR_SPEED)/controlError)*(targetDepth - currentDepth);
+					stepperMotor.setOCR1A(desiredSpeed); //mrad/s
+				}
+			}else{
 				break;
 			}
-			
-			//Set the stepper motor speed
-			if(targetDepth - currentDepth  > controlError){
-				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED); //constant speed
-			}else{
-				desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
-				//motorSpeed = desiredSpeed/SPOOL_RADIUS; //mrad/s
-				stepperMotor.setSpeed(desiredSpeed); //mrad/s
-			}
-			
 		}
 		//Disable stepper motor
-		stepperMotor.disableStepping();  
+		stepperMotor.disableStepping();   
 		
 		//Send Acknowledgment to GC
-		Serial.print(ACKNOWLEDGE_RAPPEL);
+		Serial.println(acknowledge);
 		Serial.flush();
 
 }

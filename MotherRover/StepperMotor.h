@@ -42,6 +42,8 @@ class StepperMotor
 	 */
 	void setSpeed(int angularSpeed);
 	
+	void setOCR1A(int clockCycles);
+	
 	/**
 	 * enable motor stepping functionality                                                    
 	 */

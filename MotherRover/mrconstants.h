@@ -10,16 +10,17 @@
 #endif
 
 /*MOTOR*/
-#define GEAR_RATIO 77//15
-#define MAXSPEED 115//RPM
-#define RAPPEL_ANGULAR_SPEED 5// 700 //mrad/s
+#define GEAR_RATIO 15
+#define MINSPEED 2499//clockCycles
+#define RAPPEL_ANGULAR_SPEED 124// clockCycles //124
 #define CCW  1
 #define CW 0
 #define GAIN  5//Need to determine(may not need to be a global)
 #define SPOOL_RADIUS 3 //cm
-#define STEPS_PER_REV 200
+#define STEPS_PER_REV 1
 #define MOTOR_DIR_PIN 8
 #define MOTOR_EN_PIN 7
+
 
 /*COMMUNICATION*/
 #define MR_CR_BAUD 115200

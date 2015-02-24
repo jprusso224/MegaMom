@@ -11,13 +11,13 @@
 #include "StepperMotor.h"
 
 void StepperMotor::OCR1A_ISR(){
-	if(digitalRead(STEPPIN)){
+	/*if(digitalRead(STEPPIN)){
 		if(direction){
 			stepCount++; // increment if unspooling
 		}else{
 			stepCount--; // decrement if spooling
 		}
-	}
+	}*/
 }
 
 void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
@@ -34,16 +34,22 @@ void StepperMotor::initStepperMotor(int stepsPerRev, int dirPin, int enPin){
 	TCNT1  = 0;//initialize counter value to 0
 	
 	// set compare register to 0 initially
-	OCR1A = 0;
+	OCR1A = MINSPEED;
 	// turn on CTC mode (no prescaler for timer)
 	TCCR1B |= (1 << WGM12);
-	TCCR1B |= (1 << CS10);
-	TCCR1B |= (1 << CS12);
+	TCCR1B |= (1 << CS11);
+	
 	// initially the CTC interrupt must be disabled
-	TIMSK1 |= (0 << OCIE1A);
+	//TIMSK1 |= (1 << OCIE1A);
 	// set the interrupt to toggle OCA1(located on pin 11)
 	pinMode(11,OUTPUT);
-	TCCR1A |= (1 << COM1A0);
+	pinMode(dirPin,OUTPUT);
+	pinMode(enPin,OUTPUT);
+	TCCR1A |= (0 << COM1A0);
+	
+	digitalWrite(enPin,LOW);
+	digitalWrite(11,LOW);
+
 	
 	direction = 1; //subject to change 
 	enabled = false; //initially off
@@ -64,6 +70,10 @@ void StepperMotor::setSpeed(int angularSpeed){
 	OCR1A = int(longOCR1A);
 }
 
+void StepperMotor::setOCR1A(int clockCycles){
+		OCR1A = clockCycles;
+}
+
 void StepperMotor::setDirection(int dir){
 	direction = dir;
 	digitalWrite(directionPin,direction);
@@ -75,14 +85,16 @@ int StepperMotor::getDirection(){
 
 void StepperMotor::enableStepping(){
 	enabled = true;
-	TIMSK1 |= (1 << OCIE1A); //enable interrupts
-	digitalWrite(enablePin,enabled);
+//	TIMSK1 |= (1 << OCIE1A); //enable interrupts
+	TCCR1A |= (1 << COM1A0);
+	digitalWrite(enablePin,LOW);
 }
 
 void StepperMotor::disableStepping(){
 	enabled = false;
-	TIMSK1 |= (0 << OCIE1A); //disable interrupts
-	digitalWrite(enablePin,enabled);
+//	TIMSK1 |= (0 << OCIE1A); //disable interrupts
+	TCCR1A &= ~(1 << COM1A0);
+	digitalWrite(enablePin,LOW);
 }
 
 void StepperMotor::incStepCount(){
