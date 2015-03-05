@@ -12,6 +12,7 @@
 void setup()
 {
 	mrMain.setup();
+	attachInterrupt(2,stepperEncoderISR,FALLING);
 }
 
 void loop()
@@ -19,3 +20,7 @@ void loop()
 	mrMain.loop();
 }
 
+void stepperEncoderISR()
+{
+	mrMain.stepperEncoderISR();
+}

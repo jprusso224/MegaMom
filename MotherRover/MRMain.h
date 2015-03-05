@@ -16,6 +16,7 @@
 #endif
 
 #include "StepperMotor.h"
+#include "Encoder.h"
 
 class MRMain
 {
@@ -24,6 +25,7 @@ class MRMain
 	 boolean gsInputStringComplete;
 	 String crInputString;
 	 boolean crInputStringComplete;
+	 Encoder stepperMotorEncoder;
 	 
 	 char inChar;
 	 
@@ -81,6 +83,12 @@ class MRMain
 	 * @param num number of times to blink.                                                 
 	 */
 	void blinkLED(int num);
+	
+	/**
+	 * Hardware ISR for encoder                                                  
+	 */
+	void stepperEncoderISR();
+	
 	
 };
 

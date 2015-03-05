@@ -41,5 +41,11 @@
 #define STEPPIN 11
 #define CLOCKSPEED 16000000
 
+/*ENCODER*/
+#define ENCODER_PULSE_PIN 21
+#define ENCODER_INT 2
+#define ENCODER_RESOLUTION 200
+#define ENCODER_DIR_PIN 30
+
 #endif
 

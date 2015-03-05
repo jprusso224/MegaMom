@@ -32,8 +32,7 @@ void MRMain::setup()
 	
 	///Motor
 	stepperMotor.initStepperMotor(STEPS_PER_REV,MOTOR_DIR_PIN,MOTOR_EN_PIN);
-	//digitalWrite(7,HIGH);
-	//digitalWrite(8,HIGH);
+	stepperMotorEncoder.initEncoder(ENCODER_INT,ENCODER_RESOLUTION,ENCODER_DIR_PIN,ENCODER_PULSE_PIN);//Need to specify this!!!
 	
 	//Rappelling
 	currentDepth = 0; //cm
@@ -375,6 +374,11 @@ int MRMain::readBatteryVoltage(){
 	int result = analogRead(BATTERY_PIN);
 	return result/BATTERY_INPUT_RESOLUTION; //volt/(volts/volt)
 }
+
+void MRMain::stepperEncoderISR(){
+	stepperMotorEncoder.encoderISR();
+}
+
 
 ISR(TIMER3_OVF_vect){
 	digitalWrite(ALIVE_LED_PIN,digitalRead(ALIVE_LED_PIN)^1);

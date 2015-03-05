@@ -17,10 +17,13 @@ extern "C" void __cxa_pure_virtual() {;}
 
 //
 //
+void stepperEncoderISR();
 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\variants\mega\pins_arduino.h" 
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 #include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\MotherRover.ino"
+#include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\Encoder.cpp"
+#include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\Encoder.h"
 #include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\MRMain.cpp"
 #include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\MRMain.h"
 #include "C:\Users\John Russo\Documents\Atmel Studio\6.2\MegaMom\MotherRover\StepperMotor.cpp"
