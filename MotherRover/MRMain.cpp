@@ -36,6 +36,7 @@ void MRMain::setup()
 	
 	//Rappelling
 	currentDepth = 0; //cm
+	tetherLetOut = 0;
 	
 	//setup serial port
 	Serial.begin(MR_GS_BAUD);
@@ -352,6 +353,40 @@ void MRMain::processStatusRequest(){
 		Serial.print("$SP\n");
 		Serial.flush();
 }
+
+void MRMain::autoSpoolOut(int commandLength){
+	int targetTetherOut = 0;
+	targetTetherOut = tetherLetOut + commandLength;
+	
+	stepperMotor.setDirection(CW);
+	stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
+	stepperMotor.enableStepping();
+	
+	while(tetherLetOut < targetTetherOut){
+		//Drive stepper motor
+		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
+	}
+	
+	stepperMotor.disableStepping();
+}
+
+void MRMain::autoReelIn(int commandLength){
+	int targetTetherOut = 0;
+	targetTetherOut = tetherLetOut - commandLength;
+	
+	stepperMotor.setDirection(CCW);
+	stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
+	stepperMotor.enableStepping();
+	
+	while(tetherLetOut > targetTetherOut){
+		//Drive stepper motor
+		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
+	}
+	
+	stepperMotor.disableStepping();
+}
+
+
 
 
 /**

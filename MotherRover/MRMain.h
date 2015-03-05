@@ -27,9 +27,11 @@ class MRMain
 	 boolean crInputStringComplete;
 	 Encoder stepperMotorEncoder;
 	 
+	 
 	 char inChar;
 	 
 	 int currentDepth;
+	 int tetherLetOut;
 	 
 	 /**
 	  * Battery                                                    
@@ -89,6 +91,15 @@ class MRMain
 	 */
 	void stepperEncoderISR();
 	
+	/**
+	 * Function to auto spool tether via the winch                                                    
+	 */
+	void autoSpoolOut(int commandLength);	
+	
+	/**
+	 * Function to auto reel tether via the winch                                                    
+	 */
+	void autoReelIn(int commandLength);
 	
 };
 
