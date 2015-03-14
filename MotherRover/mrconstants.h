@@ -25,6 +25,8 @@
 /*COMMUNICATION*/
 #define MR_CR_BAUD 115200
 #define MR_GS_BAUD 115200
+// switch on XBee shield has to be in DLINE for programming and UART for execution
+// UART maps serial from XBee to pins 0/1 and DLINE maps serial from XBee to ports 2/3
 
 /*COMMAND STRINGS*/
 #define GET_DEPTH "$R0\n"

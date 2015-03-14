@@ -10,6 +10,7 @@
  * Update 1/8/2015 by John Russo: Serial communication with GS
  * Update 1/17/2015 by John Russo: Serial communication with CR
  * Update 2/2/2015 by John Russo: processRappelCommand() implemented. Still need gain. 
+ * Update 3/13/15 by Casey Zahorik: Imaging debugging
  * ===========================================================================================================
  */ 
 
@@ -39,8 +40,8 @@ void MRMain::setup()
 	tetherLetOut = 0;
 	
 	//setup serial port
-	Serial.begin(MR_GS_BAUD);
-	Serial3.begin(MR_CR_BAUD);
+	Serial.begin(MR_GS_BAUD); // to GS
+	Serial3.begin(MR_CR_BAUD); // to MRssssssss
 	gsInputStringComplete = false;
 	gsInputString = "";
 	crInputStringComplete = false;
@@ -187,11 +188,6 @@ void MRMain::processImageCommand(){
 		Serial3.print(gsInputString);
 		Serial3.flush();
 		
-		//Wait for Image to be received. 
-		while(!Serial3.available()){
-			//Just keep waiting for now
-		}
-		
 		//Stream serial data to GS until finished with image
 		while(!imageRelayed){
 			if(Serial3.available() > 0){
@@ -202,6 +198,7 @@ void MRMain::processImageCommand(){
 				Serial.print(imageChar);
 			}
 		}
+		Serial.flush();
 }
 
 /**
