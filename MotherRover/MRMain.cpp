@@ -234,7 +234,7 @@ void MRMain::processRappelCommand(){
 			stepperMotor.setDirection(CW);
 		}
 		targetDepth = currentDepth + rappelDistance - 20;
-		Serial.println("No Motor!");
+		//Serial.println("No Motor!");
 		//Set up the rest of stepper motor
 		stepperMotor.setSpeed(motorSpeed);
 		stepperMotor.enableStepping();
