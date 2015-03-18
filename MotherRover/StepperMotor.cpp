@@ -65,13 +65,15 @@ void StepperMotor::setSpeed(int angularSpeed){
 	//update stored value
 	speed = angularSpeed*GEAR_RATIO; // mrads/sec
 	//Convert rpm into a value for OCR1A
+	
 	long stepsPerSec = (angularSpeed*GEAR_RATIO*stepsPerRad)/1000;
 	long longOCR1A = CLOCKSPEED/1024/stepsPerSec/2;
 	OCR1A = int(longOCR1A);
 }
 
-void StepperMotor::setOCR1A(int clockCycles){
-		OCR1A = clockCycles;
+void StepperMotor::setOCR1A(int freq){
+	
+		OCR1A = (int)(CLOCKSPEED/16.0/float(freq));
 }
 
 void StepperMotor::setDirection(int dir){

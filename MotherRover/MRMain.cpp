@@ -214,7 +214,7 @@ void MRMain::processRappelCommand(){
 		String crDepthString = "";
 		int desiredSpeed = MINSPEED;
 		int motorSpeed = MINSPEED;
-		int controlError = 20; //cm
+		float controlError = 20.0; //cm
 		long serialTime0 = 0L;
 		long serialTime = 0L;
 		int counter = 0;
@@ -317,7 +317,7 @@ void MRMain::processRappelCommand(){
 				}else{
 					//desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
 					//motorSpeed = desiredSpeed/SPOOL_RADIUS; //mrad/s
-					desiredSpeed = MINSPEED - ((MINSPEED - RAPPEL_ANGULAR_SPEED)/controlError)*(targetDepth - currentDepth);
+					desiredSpeed = MINSPEED - ((MINSPEED - RAPPEL_ANGULAR_SPEED)/controlError)*(targetDepth - currentDepth); //frequency not speed
 					stepperMotor.setOCR1A(desiredSpeed); //mrad/s
 				}
 			}else{
