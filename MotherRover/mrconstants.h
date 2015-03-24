@@ -10,13 +10,13 @@
 #endif
 
 /*MOTOR*/
-#define GEAR_RATIO 15
+#define GEAR_RATIO 15.3
 #define MINSPEED 400//clockCycles
 #define RAPPEL_ANGULAR_SPEED 8000// clockCycles //124
 #define CCW  1
 #define CW 0
 #define GAIN  5//Need to determine(may not need to be a global)
-#define SPOOL_RADIUS 3 //cm
+#define SPOOL_RADIUS 4.6 //cm
 #define STEPS_PER_REV 1
 #define MOTOR_DIR_PIN 8
 #define MOTOR_EN_PIN 7
@@ -46,7 +46,7 @@
 /*ENCODER*/
 #define ENCODER_PULSE_PIN 21
 #define ENCODER_INT 2
-#define ENCODER_RESOLUTION 200
+#define ENCODER_RESOLUTION 300.0
 #define ENCODER_DIR_PIN 30
 
 #endif

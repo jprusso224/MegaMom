@@ -25,12 +25,12 @@ void MRMain::setup()
 {
 	//Setup alive LED
 	pinMode(ALIVE_LED_PIN,OUTPUT);
-	TCCR3A = 0;//set timer control registers to zero
+	/*TCCR3A = 0;//set timer control registers to zero
 	TCCR3B = 0;//same as above
 	TCNT3  = 0;//initialize counter value to 0
 	TCCR3B |= (1 << CS32); //prescaler 256
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
-	
+	*/
 	///Motor
 	stepperMotor.initStepperMotor(STEPS_PER_REV,MOTOR_DIR_PIN,MOTOR_EN_PIN);
 	stepperMotorEncoder.initEncoder(ENCODER_INT,ENCODER_RESOLUTION,ENCODER_DIR_PIN,ENCODER_PULSE_PIN);//Need to specify this!!!
@@ -95,6 +95,8 @@ void MRMain::parseCommand(){
 		//Serial.println("Command Recevied");
 	commandType = gsInputString[1];
 	switch(commandType){
+		case 'A':
+			processAutoWinchCommand();
 		case 'R':
 			if(gsInputString[2] == '0'){
 				processRappelCommand();
@@ -112,6 +114,27 @@ void MRMain::parseCommand(){
 			processStatusRequest();
 			break;
 	}
+}
+
+/**
+ * Gets the distance from the command string and either calls autoReelIn or autoSpoolOut
+ * @see autoReelIn(int distance)
+ * @see autoSpoolOut(int distance)                                        
+ */
+void MRMain::processAutoWinchCommand(){
+	String targetString = "";
+	int spoolLength = 0;
+	blinkLED(3);
+	targetString = gsInputString.substring(4,7);
+	spoolLength = targetString.toInt();
+	
+	if(gsInputString[3] == '+'){
+		autoSpoolOut(spoolLength);
+	}else{
+		autoReelIn(spoolLength);
+	}
+	
+	Serial.println("$AP");
 }
 
 /**
@@ -354,16 +377,26 @@ void MRMain::processStatusRequest(){
 void MRMain::autoSpoolOut(int commandLength){
 	int targetTetherOut = 0;
 	targetTetherOut = tetherLetOut + commandLength;
+	long pulseCount = 0;
 	
+	
+	stepperMotorEncoder.setDirFlag(false);
 	stepperMotor.setDirection(CW);
-	stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
+	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut < targetTetherOut){
 		//Drive stepper motor
+		delay(100);
+		
+		pulseCount = stepperMotorEncoder.getPulseCount();
 		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
+		
+	//	Serial.println("TetherOut: " + (String)tetherLetOut);
+		//Serial.println("Pulses: " + (String)pulseCount);
 	}
-	
+	pulseCount = stepperMotorEncoder.getPulseCount();
+	Serial.println("Pulses: " + (String)pulseCount);
 	stepperMotor.disableStepping();
 }
 
@@ -372,7 +405,8 @@ void MRMain::autoReelIn(int commandLength){
 	targetTetherOut = tetherLetOut - commandLength;
 	
 	stepperMotor.setDirection(CCW);
-	stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
+	stepperMotorEncoder.setDirFlag(true);
+	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){

@@ -13,12 +13,13 @@ void Encoder::initEncoder(int interruptNumber, int resolution,int dirPin,int ePi
 	pinMode(ePin,INPUT);
 	digitalWrite(ePin,HIGH);
 	pinMode(dirPin,INPUT);
+	dirFlag = false;
 	
 }
 
 void Encoder::encoderISR(){
 	
-	if(digitalRead(_dirPin) == CCW){
+	if(dirFlag){
 			pulseCount--;
 	}
 	else{
@@ -29,12 +30,17 @@ void Encoder::encoderISR(){
 
 int Encoder::getDistanceTraveled(){
 	
-	long mrad = long(pulseCount*10*2*PI)/_resolution; //(rad/1000)
+	float mrad = (float)(pulseCount*2.0*PI)/(float)_resolution; //(rad/1000)
 	//Serial.print((String)mrad)
-    int distanceTraveled = int(mrad*SPOOL_RADIUS/10); 
+	mrad = mrad/GEAR_RATIO;
+    int distanceTraveled = int(mrad*SPOOL_RADIUS); 
 	return distanceTraveled;
 }
 
-int Encoder::getPulseCount(){
+long Encoder::getPulseCount(){
 	return pulseCount;
+}
+
+void Encoder::setDirFlag(boolean flag){
+	dirFlag = flag;
 }

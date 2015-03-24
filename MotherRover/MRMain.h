@@ -55,6 +55,11 @@ class MRMain
 	void parseCommand();
 	
 	/**
+	 * Command for reeling in and out tether during testing.                                                  
+	 */
+	void processAutoWinchCommand();
+	
+	/**
 	 * Relays command to CR and waits for acknowledgment                
 	 */
 	void processImageCommand();
