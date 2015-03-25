@@ -138,7 +138,8 @@ void MRMain::processAutoWinchCommand(){
 }
 
 /**
- * Blinks and LED 5 times and sends the drive acknowledgment to the GS                                                    
+ * For driving straight this command will first call autoSpoolOut. It will then send the 
+ * drive command to the CR and relay drive data from the CR until the acknowledgment is received.                                         
  */
 void MRMain::processDriveCommand(){
 	
@@ -147,8 +148,8 @@ void MRMain::processDriveCommand(){
 		long int startCount = 0L;
 		long int targetCount = 0L;
 		char fromCR = NULL;
-		
-		blinkLED(5);
+		boolean finished = false;
+		boolean relayDriveData = true;
 	
 		/*Determine whether turning or driving*/
 		char driveType;
@@ -166,35 +167,42 @@ void MRMain::processDriveCommand(){
 				//Drive forwards
 				targetString = gsInputString.substring(4,7);
 				driveDistance = targetString.toInt();
-				startCount = stepperMotor.getStepCount();
-				
-				targetCount = startCount + long((driveDistance*STEPS_PER_REV*GEAR_RATIO)/SPOOL_RADIUS/PI);
-				
-				stepperMotor.setSpeed(RAPPEL_ANGULAR_SPEED);
-				stepperMotor.setDirection(CCW);
-				stepperMotor.enableStepping();
-				
-				while(stepperMotor.getStepCount() < targetCount){
-					//Just keep stepping
-				}
-				
+				//call auto spool out.				
+				autoSpoolOut(driveDistance);
+
 				//Send command to CR
 				Serial3.print(gsInputString);
-				
 				//Wait for acknowledgment
 				while(!Serial3.available()){
 							//Wait here for depth from CR
 				}
 				delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
-				while(Serial3.available() > 0){
-					fromCR = (char)Serial3.read();
-					crInputString += fromCR;
-					if (fromCR == '\n') {
-						crInputStringComplete = true;
-					    Serial.print(crInputString);
-					    Serial.flush();
+
+				while(!finished){
+					if(Serial3.available() > 0){
+						fromCR = (char)Serial3.read();
+						if(fromCR == '$'){
+							relayDriveData = false;
+						}
+						if(relayDriveData){
+							//relay drive data
+							Serial.print(fromCR);
+						}else{
+							//add to acknowledgment string
+							crInputString+=fromCR;
+							if(fromCR == '\n'){
+								finished = true;
+								Serial.print(crInputString);
+								Serial.flush();
+							}
+						}
 					}
 				}
+				//reset booleans and clear input string.
+				finished = false;
+				relayDriveData = true;
+				crInputString = "";
+
 				break;
 		}
 }
