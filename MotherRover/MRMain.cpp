@@ -25,12 +25,12 @@ void MRMain::setup()
 {
 	//Setup alive LED
 	pinMode(ALIVE_LED_PIN,OUTPUT);
-	/*TCCR3A = 0;//set timer control registers to zero
+	TCCR3A = 0;//set timer control registers to zero
 	TCCR3B = 0;//same as above
 	TCNT3  = 0;//initialize counter value to 0
 	TCCR3B |= (1 << CS32); //prescaler 256
 	TIMSK3 |= (1 << TOIE3); //enable overflow interrupt
-	*/
+	
 	///Motor
 	stepperMotor.initStepperMotor(STEPS_PER_REV,MOTOR_DIR_PIN,MOTOR_EN_PIN);
 	stepperMotorEncoder.initEncoder(ENCODER_INT,ENCODER_RESOLUTION,ENCODER_DIR_PIN,ENCODER_PULSE_PIN);//Need to specify this!!!
@@ -165,10 +165,10 @@ void MRMain::processDriveCommand(){
 				break;
 			default:
 				//Drive forwards
-				targetString = gsInputString.substring(4,7);
+				targetString = gsInputString.substring(3,6);
 				driveDistance = targetString.toInt();
 				//call auto spool out.				
-				autoSpoolOut(driveDistance);
+				autoSpoolOut(driveDistance+7);
 
 				//Send command to CR
 				Serial3.print(gsInputString);
@@ -414,7 +414,7 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.setDirection(CCW);
 	stepperMotorEncoder.setDirFlag(true);
-	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
+	stepperMotor.setOCR1A(1000);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){
