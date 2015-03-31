@@ -70,6 +70,11 @@ class MRMain
 	void processDriveCommand();
 	
 	/**
+	 * Drive command for deploy command                                                    
+	 */
+	void processDriveCommand(int distance);
+	
+	/**
 	 * Unspool/spool tether                                                   
 	 */
 	void processRappelCommand();
@@ -83,6 +88,11 @@ class MRMain
 	 * Reels in the CR using the stepper motor                                           
 	 */
 	void processReturnCommand();
+	
+	/**
+	 * Deploys the CR from the MR bay to the rappelling surface                                                    
+	 */
+	void processDeployCommand();
 	
 	/**
 	 * Blink LED   

@@ -108,7 +108,11 @@ void MRMain::parseCommand(){
 			processImageCommand();
 			break;
 		case 'D':
-			processDriveCommand();
+			if(gsInputString[3] == 'D'){
+				processDeployCommand();
+			}else{
+				processDriveCommand();
+			}
 			break;
 		default:
 			processStatusRequest();
@@ -207,6 +211,31 @@ void MRMain::processDriveCommand(){
 		}
 }
 	
+	
+void MRMain::processDriveCommand(int distance){
+	boolean finished = false;
+	char fromCR = NULL;
+	
+	//Send command to CR
+	String cmdString = "$DF" + (String)distance + "\n";
+	Serial3.print(cmdString);
+	
+	while(!finished){
+	//Wait for acknowledgment
+		while(!Serial3.available()){
+			//Wait here for depth from CR
+		}
+		delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
+	
+		//Receive Acknowledge (just part of one) 
+		while(Serial.available() > 0){
+			fromCR = Serial3.read();
+			if(fromCR == '$'){
+				finished = true;
+			}
+		}
+	}
+}
 /**
  * Blinks and LED 4 times and sends the image acknowledgment to the GS                                                    
  */
@@ -370,6 +399,36 @@ void MRMain::processRappelCommand(){
  */
 void MRMain::processReturnCommand(){
 	//REEL IN THE CR
+}
+
+void MRMain::processDeployCommand(){
+	
+	boolean driveFinished = false;
+	boolean tetherFinished = false;
+	boolean finished = false;
+	int remainder = 54; //cm
+	int driveTether = 84; //cm
+	int currentTether = 0;
+	
+	while(!finished){
+		
+		if(!driveFinished){
+			currentTether = stepperMotorEncoder.getDistanceTraveled();
+			if(currentTether < driveTether){
+				processDriveCommand(5);//Careful! Drive command doesn't take a command yet.
+			}else{
+				driveFinished = true;
+			}
+		}else{
+			autoSpoolOut(remainder);
+			tetherFinished = true;
+		}
+		
+		if(driveFinished && tetherFinished){
+			finished = true;
+		}
+	}
+	Serial.println("$DDF");
 }
 
 /**
