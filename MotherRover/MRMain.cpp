@@ -108,7 +108,7 @@ void MRMain::parseCommand(){
 			processImageCommand();
 			break;
 		case 'D':
-			if(gsInputString[3] == 'D'){
+			if(gsInputString[2] == 'D'){
 				processDeployCommand();
 			}else{
 				processDriveCommand();
@@ -228,7 +228,7 @@ void MRMain::processDriveCommand(int distance){
 		delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
 	
 		//Receive Acknowledge (just part of one) 
-		while(Serial.available() > 0){
+		while(Serial3.available() > 0){
 			fromCR = Serial3.read();
 			if(fromCR == '$'){
 				finished = true;
@@ -406,8 +406,8 @@ void MRMain::processDeployCommand(){
 	boolean driveFinished = false;
 	boolean tetherFinished = false;
 	boolean finished = false;
-	int remainder = 54; //cm
-	int driveTether = 84; //cm
+	int remainder = 32; //cm
+	int driveTether = 70; //cm
 	int currentTether = 0;
 	
 	while(!finished){
@@ -415,11 +415,15 @@ void MRMain::processDeployCommand(){
 		if(!driveFinished){
 			currentTether = stepperMotorEncoder.getDistanceTraveled();
 			if(currentTether < driveTether){
+				Serial.println("Deploying Tether");
+				autoSpoolOut(5);
+				Serial.println("Driving");
 				processDriveCommand(5);//Careful! Drive command doesn't take a command yet.
 			}else{
 				driveFinished = true;
 			}
 		}else{
+			Serial.println("Spooling Remainder");
 			autoSpoolOut(remainder);
 			tetherFinished = true;
 		}
@@ -428,7 +432,7 @@ void MRMain::processDeployCommand(){
 			finished = true;
 		}
 	}
-	Serial.println("$DDF");
+	Serial.println("$DDP");
 }
 
 /**
@@ -463,7 +467,7 @@ void MRMain::autoSpoolOut(int commandLength){
 		//Serial.println("Pulses: " + (String)pulseCount);
 	}
 	pulseCount = stepperMotorEncoder.getPulseCount();
-	Serial.println("Pulses: " + (String)pulseCount);
+	//Serial.println("Pulses: " + (String)pulseCount);
 	stepperMotor.disableStepping();
 }
 
