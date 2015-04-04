@@ -10,11 +10,11 @@
 #endif
 
 /*MOTOR*/
-#define GEAR_RATIO 15.3
+#define GEAR_RATIO 77.0//15.3
 #define MINSPEED 400//clockCycles
 #define RAPPEL_ANGULAR_SPEED 8000// clockCycles //124
-#define CCW  0
-#define CW 1 //Mental Note: These are switched 
+#define CCW  1
+#define CW 0 //Mental Note: These are switched 
 #define GAIN  5//Need to determine(may not need to be a global)
 #define SPOOL_RADIUS 4.6 //cm
 #define STEPS_PER_REV 1

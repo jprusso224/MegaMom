@@ -477,7 +477,7 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.setDirection(CCW);
 	stepperMotorEncoder.setDirFlag(true);
-	stepperMotor.setOCR1A(1000);
+	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){
