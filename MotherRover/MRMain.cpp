@@ -110,6 +110,8 @@ void MRMain::parseCommand(){
 		case 'D':
 			if(gsInputString[2] == 'D'){
 				processDeployCommand();
+			}else if(gsInputString[2] == 'T'){
+				processTransitionCommand();
 			}else{
 				processDriveCommand();
 			}
@@ -212,12 +214,12 @@ void MRMain::processDriveCommand(){
 }
 	
 	
-void MRMain::processDriveCommand(int distance){
+void MRMain::processDriveCommand(int distance, String type){
 	boolean finished = false;
 	char fromCR = NULL;
 	
 	//Send command to CR
-	String cmdString = "$DF" + (String)distance + "\n";
+	String cmdString = "$DF" + (String)distance + type + "\n";
 	Serial3.print(cmdString);
 	
 	while(!finished){
@@ -418,7 +420,7 @@ void MRMain::processDeployCommand(){
 				Serial.println("Deploying Tether");
 				autoSpoolOut(5);
 				Serial.println("Driving");
-				processDriveCommand(5);//Careful! Drive command doesn't take a command yet.
+				processDriveCommand(5, "R");//Careful! Drive command doesn't take a command yet.
 			}else{
 				driveFinished = true;
 			}
@@ -429,17 +431,71 @@ void MRMain::processDeployCommand(){
 		}
 		
 		if(driveFinished && tetherFinished){
+			finished = true;	
+		}
+	}
+	Serial.println("$DDP");  //apparently there is no way to fail
+}
+
+void MRMain::processTransitionCommand(){
+	boolean driveFinished = false;
+	boolean tetherFinished = false;
+	boolean finished = false;
+	int remainder = 20; //cm
+	int driveTether = 30; //cm
+	int currentTether = 0;
+	int initDepth = stepperMotorEncoder.getDistanceTraveled();
+	boolean crInputStringComplete = false;
+	String crInputString = "";
+	
+	//transition to horizontal
+	while(!finished){
+		if(!driveFinished){
+			currentTether = stepperMotorEncoder.getDistanceTraveled() - initDepth;
+			if(currentTether < driveTether){
+				Serial.println("Deploying Tether");
+				autoSpoolOut(3);
+				Serial.println("Driving");
+				processDriveCommand(5, "F"); // drive longer than spooled and don't keep track is distance traveled
+				}else{
+				driveFinished = true;
+			}
+			}else{
+			Serial.println("Driving Remainder");
+			autoSpoolOut(remainder);
+			processDriveCommand(remainder, "F");
+			tetherFinished = true;
+		}
+		
+		if(driveFinished && tetherFinished){
 			finished = true;
 		}
 	}
-	Serial.println("$DDP");
+	
+	//once driven forward "a little off" drive backward until it hits the wall
+	Serial3.println("$DFTRA");
+	while (Serial.available() > 0 && crInputStringComplete == false) {
+		// get the new byte
+		inChar = (char)Serial.read();
+		// add it to the inputString
+		crInputString += inChar;
+		// if the incoming character is a newline, set a flag (end of command)
+		if (inChar == '\n') {
+			crInputStringComplete = true;
+		}
+	}
+	//check if it returns a pass -  then back at wall
+	if (crInputString == "$DTP\n")
+		Serial.println("$DTP");
+	else
+		Serial.println("$DTF");
 }
 
 /**
  * Blinks and LED 2 times and sends the status acknowledgment to the GS                                                    
  */
 void MRMain::processStatusRequest(){
-	
+		//eventually will actually send data like battery capacity
 		blinkLED(2);
 		Serial.print("$SP\n");
 		Serial.flush();
@@ -487,8 +543,6 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.disableStepping();
 }
-
-
 
 
 /**

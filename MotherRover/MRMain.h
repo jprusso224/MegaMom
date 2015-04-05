@@ -72,7 +72,7 @@ class MRMain
 	/**
 	 * Drive command for deploy command                                                    
 	 */
-	void processDriveCommand(int distance);
+	void processDriveCommand(int distance, String type);
 	
 	/**
 	 * Unspool/spool tether                                                   
@@ -93,6 +93,11 @@ class MRMain
 	 * Deploys the CR from the MR bay to the rappelling surface                                                    
 	 */
 	void processDeployCommand();
+	
+	/**
+	 * Transitions vert to horiz                                                    
+	 */
+	void processTransitionCommand();
 	
 	/**
 	 * Blink LED   

@@ -18,8 +18,8 @@
 #define GAIN  5//Need to determine(may not need to be a global)
 #define SPOOL_RADIUS 4.6 //cm
 #define STEPS_PER_REV 1
-#define MOTOR_DIR_PIN 8
-#define MOTOR_EN_PIN 7
+#define MOTOR_DIR_PIN 10
+#define MOTOR_EN_PIN 9
 
 
 /*COMMUNICATION*/
