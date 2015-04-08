@@ -418,8 +418,8 @@ void MRMain::processDeployCommand(){
 	boolean driveFinished = false;
 	boolean tetherFinished = false;
 	boolean finished = false;
-	int remainder = 32; //cm
-	int driveTether = 70; //cm
+	int remainder = 30; //cm
+	int driveTether = 65; //cm
 	int currentTether = 0;
 	
 	while(!finished){
@@ -428,7 +428,7 @@ void MRMain::processDeployCommand(){
 			currentTether = stepperMotorEncoder.getDistanceTraveled();
 			if(currentTether < driveTether){
 				Serial.println("Deploying Tether");
-				autoSpoolOut(5);
+				autoSpoolOut(6);
 				Serial.println("Driving");
 				processDriveCommand(5, "R");//Careful! Drive command doesn't take a command yet.
 			}else{
@@ -452,7 +452,7 @@ void MRMain::processTransitionCommand(){
 	//boolean tetherFinished = false;
 	//boolean finished = false;
 	//int remainder = 20; //cm
-	int driveTether = 30; //cm
+	int driveTether = 35; //cm
 	//int currentTether = 0;
 	//int initDepth = stepperMotorEncoder.getDistanceTraveled();
 	//boolean crInputStringComplete = false;
@@ -462,6 +462,7 @@ void MRMain::processTransitionCommand(){
 	
 	//Send manual drive command to CR
 	Serial3.print("$DTG\n");
+	Serial.println("Driving");
 	while(!Serial3.available()){
 		//play the waiting game	
 	}
@@ -470,12 +471,18 @@ void MRMain::processTransitionCommand(){
 	//but we should still read it to empty the buffer.
 	while(Serial3.available()>0){
 		fromCR = Serial3.read(); //read it
+		Serial.println((String)fromCR);
 		fromCR = NULL; //toss it.
 	}
 	//Spool out a preset length of tether.
+	Serial.println("Deploying Tether");
 	autoSpoolOut(driveTether);
+	Serial.println("Tether Deployed");
+	
 	//Sen manual stop command to CR
+	Serial.print("DTS\n");
 	Serial3.print("$DTS\n");
+	Serial.println("CR Stopped");
 	while(!Serial3.available()){
 		//play the waiting game
 	}
@@ -484,9 +491,11 @@ void MRMain::processTransitionCommand(){
 	//but we should still read it to empty the buffer.
 	while(Serial3.available()>0){
 		fromCR = Serial3.read(); //read it
+		Serial.println((String)fromCR);
 		fromCR = NULL; //toss it.
 	}
 	//Tell the CR to drive backwards until it hits the wall.
+	Serial.println("CR In Reverse");
 	Serial3.print("$DTRA\n");
 	while(!Serial3.available()){
 		//play the waiting game
@@ -592,11 +601,12 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.setDirection(CCW);
 	stepperMotorEncoder.setDirFlag(true);
-	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
+	stepperMotor.setOCR1A(2000);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){
 		//Drive stepper motor
+		
 		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
 	}
 	
