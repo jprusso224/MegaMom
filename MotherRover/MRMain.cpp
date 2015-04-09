@@ -410,7 +410,19 @@ void MRMain::processAutoRappelCommand(){
 	
 	//Rappel the rover until range reads zero
 	//Still need to know depth!
-	
+		String targetString = "";
+		int rappelDistance = 0;
+		int targetDepth = 0;
+		char fromCR = NULL;
+		String crDepthString = "";
+		int desiredSpeed = MINSPEED;
+		int motorSpeed = MINSPEED;
+		float controlError = 20.0; //cm
+		long serialTime0 = 0L;
+		long serialTime = 0L;
+		int counter = 0;
+		String acknowledge = "$R0P";
+		int gsDebug = 0;
 	//Get depth from CR
 	
 	
