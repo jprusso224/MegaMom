@@ -80,6 +80,11 @@ class MRMain
 	void processRappelCommand();
 	
 	/**
+	 * auto rappel                                                    
+	 */
+	void processAutoRappelCommand();
+	
+	/**
 	 * Relays command to CR and waits for acknowledgment. Then attaches MR status and returns to GS                                            
 	 */
 	void processStatusRequest();

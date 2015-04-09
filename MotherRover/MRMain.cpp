@@ -100,6 +100,8 @@ void MRMain::parseCommand(){
 		case 'R':
 			if(gsInputString[2] == '0'){
 				processRappelCommand();
+			}else if(gsInputString[2] == 'A'){
+				processAutoRappelCommand();
 			}else{
 				processReturnCommand();
 			}
@@ -324,7 +326,6 @@ void MRMain::processRappelCommand(){
 					
 			}
 		}
-		
 		crDepthString = crInputString.substring(3,6);
 		currentDepth = crDepthString.toInt();
 		Serial.println(currentDepth);
@@ -405,6 +406,107 @@ void MRMain::processRappelCommand(){
 
 }
 		
+void MRMain::processAutoRappelCommand(){
+	
+	//Rappel the rover until range reads zero
+	//Still need to know depth!
+	
+	//Get depth from CR
+	
+	
+	stepperMotor.setDirection(CW);
+	stepperMotor.setOCR1A(7000);
+	stepperMotor.enableStepping();
+	
+		Serial3.print(GET_DEPTH);
+		while(!Serial3.available()){
+			//
+		}
+		while(Serial3.available() > 0){
+			fromCR = (char)Serial3.read();
+			crInputString += fromCR;
+			if (fromCR == '\n') {
+				crInputStringComplete = true;	
+			}
+		}
+		crDepthString = crInputString.substring(3,6);
+		currentDepth = crDepthString.toInt();
+		Serial.println(currentDepth);
+		
+		while(currentDepth > 21){
+			//	Serial.println("Looping!");
+			//Get depth from CR
+			
+			TCCR1A &= ~(1 << COM1A0);
+			Serial3.print(GET_DEPTH);
+			TCCR1A |= (1 << COM1A0);
+			
+			serialTime0 = millis();
+			counter = 0;
+			while(!Serial3.available()){
+				//Wait here for depth from CR
+				serialTime = millis();
+				if(serialTime - serialTime0 > 2000){
+					Serial.print("Resending command to CR...\n");
+					counter++;
+					noInterrupts();
+					Serial3.print(GET_DEPTH);
+					interrupts();
+					serialTime0 = millis();
+					if(counter == 4){
+						Serial.println("Failed to communicate with CR");
+						acknowledge = "$R0F";
+						break;
+					}
+				}
+			}
+			if(counter < 4 ){
+				//Serial.println("Distance received");
+				delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
+				if(Serial3.available() > 0){
+				}
+				while(Serial3.available() > 0){
+					fromCR = (char)Serial3.read();
+					crInputString += fromCR;
+					if (fromCR == '\n') {
+						crInputStringComplete = true;
+						
+					}
+				}
+				interrupts();
+				//Extract CR depth from
+				crDepthString = crInputString.substring(3,6);
+				crInputString = "";
+				currentDepth = crDepthString.toInt();
+				Serial.println(currentDepth);
+				
+				//Check to see if you even need to set stepper motor
+				if(currentDepth < 21){
+					stepperMotor.setSpeed(MINSPEED);
+					break;
+				}
+				
+				//Set the stepper motor speed
+				if(currentDepth - 21  > controlError){
+					stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED); //constant speed
+					}else{
+					//desiredSpeed = ((targetDepth - currentDepth)*RAPPEL_ANGULAR_SPEED)/controlError;//cm/s
+					//motorSpeed = desiredSpeed/SPOOL_RADIUS; //mrad/s
+					desiredSpeed = MINSPEED - ((MINSPEED - RAPPEL_ANGULAR_SPEED)/controlError)*(currentDepth - 21); //frequency not speed
+					stepperMotor.setOCR1A(desiredSpeed); //mrad/s
+				}
+				}else{
+				break;
+			}
+		}
+		//Disable stepper motor
+		stepperMotor.disableStepping();
+		
+		//Send Acknowledgment to GC
+		Serial.println(acknowledge);
+		Serial.flush();
+	
+}
 
 /**
  * Uses the stepper motor to reel in the CR. Step count ensures all tether is reeled in.                                                    
