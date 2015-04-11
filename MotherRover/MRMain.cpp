@@ -100,7 +100,7 @@ void MRMain::parseCommand(){
 		case 'R':
 			if(gsInputString[2] == '0'){
 				processRappelCommand();
-			}else if(gsInputString[2] == 'A'){
+			}else if(gsInputString[2] == 'D'){
 				processAutoRappelCommand();
 			}else{
 				processReturnCommand();
@@ -408,6 +408,7 @@ void MRMain::processRappelCommand(){
 		
 void MRMain::processAutoRappelCommand(){
 	
+	Serial.println("Entered Auto Rappel Command");
 	//Rappel the rover until range reads zero
 	//Still need to know depth!
 		String targetString = "";
@@ -430,27 +431,30 @@ void MRMain::processAutoRappelCommand(){
 	stepperMotor.setOCR1A(7000);
 	stepperMotor.enableStepping();
 	
-		Serial3.print(GET_DEPTH);
+		Serial.println("Getting Depth from CR");
+		Serial3.print("$RD\n");
 		while(!Serial3.available()){
 			//
 		}
+		delay(5);
 		while(Serial3.available() > 0){
 			fromCR = (char)Serial3.read();
+			Serial.println(String(fromCR));
 			crInputString += fromCR;
-			if (fromCR == '\n') {
-				crInputStringComplete = true;	
-			}
 		}
+		Serial.println("Received Initial Depth");
 		crDepthString = crInputString.substring(3,6);
 		currentDepth = crDepthString.toInt();
-		Serial.println(currentDepth);
-		
+		Serial.print(crInputString);
+		crInputString = "";
+
+		Serial.println("Entering Rappel Loop");
 		while(currentDepth > 21){
 			//	Serial.println("Looping!");
 			//Get depth from CR
 			
 			TCCR1A &= ~(1 << COM1A0);
-			Serial3.print(GET_DEPTH);
+			Serial3.print("$RD\n");
 			TCCR1A |= (1 << COM1A0);
 			
 			serialTime0 = millis();
@@ -462,7 +466,7 @@ void MRMain::processAutoRappelCommand(){
 					Serial.print("Resending command to CR...\n");
 					counter++;
 					noInterrupts();
-					Serial3.print(GET_DEPTH);
+					Serial3.print("$RD\n");
 					interrupts();
 					serialTime0 = millis();
 					if(counter == 4){
@@ -513,6 +517,9 @@ void MRMain::processAutoRappelCommand(){
 		}
 		//Disable stepper motor
 		stepperMotor.disableStepping();
+		
+		//Spool out margin
+		autoSpoolOut(3);
 		
 		//Send Acknowledgment to GC
 		Serial.println(acknowledge);
@@ -715,13 +722,16 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.setDirection(CCW);
 	stepperMotorEncoder.setDirFlag(true);
-	stepperMotor.setOCR1A(2000);
+	stepperMotor.setOCR1A(7000);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){
 		//Drive stepper motor
-		
 		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
+		delay(100);
+		if(tetherLetOut < 2100){
+			stepperMotor.setOCR1A(2000);
+		}
 	}
 	
 	stepperMotor.disableStepping();
