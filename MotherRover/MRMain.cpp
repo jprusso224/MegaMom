@@ -462,7 +462,7 @@ void MRMain::processAutoRappelCommand(){
 			while(!Serial3.available()){
 				//Wait here for depth from CR
 				serialTime = millis();
-				if(serialTime - serialTime0 > 2000){
+				if(serialTime - serialTime0 > 5000){
 					Serial.print("Resending command to CR...\n");
 					counter++;
 					noInterrupts();
@@ -479,8 +479,7 @@ void MRMain::processAutoRappelCommand(){
 			if(counter < 4 ){
 				//Serial.println("Distance received");
 				delay(RAPPEL_SERIAL_DELAY); //Delay so serial buffer can fill
-				if(Serial3.available() > 0){
-				}
+				
 				while(Serial3.available() > 0){
 					fromCR = (char)Serial3.read();
 					crInputString += fromCR;
@@ -519,11 +518,11 @@ void MRMain::processAutoRappelCommand(){
 		stepperMotor.disableStepping();
 		
 		//Spool out margin
-		autoSpoolOut(3);
+		autoSpoolOut(7);
 		
 		//Send Acknowledgment to GC
 		Serial.println(acknowledge);
-		Serial.flush();
+		//Serial.flush();  //for some reason this breaks things whereas the others fix it... 
 	
 }
 
@@ -573,7 +572,7 @@ void MRMain::processTransitionCommand(){
 	//boolean tetherFinished = false;
 	//boolean finished = false;
 	//int remainder = 20; //cm
-	int driveTether = 35; //cm
+	int driveTether = 40; //cm
 	//int currentTether = 0;
 	//int initDepth = stepperMotorEncoder.getDistanceTraveled();
 	//boolean crInputStringComplete = false;
@@ -722,14 +721,14 @@ void MRMain::autoReelIn(int commandLength){
 	
 	stepperMotor.setDirection(CCW);
 	stepperMotorEncoder.setDirFlag(true);
-	stepperMotor.setOCR1A(7000);
+	stepperMotor.setOCR1A(RAPPEL_ANGULAR_SPEED);
 	stepperMotor.enableStepping();
 	
 	while(tetherLetOut > targetTetherOut){
 		//Drive stepper motor
 		tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
 		delay(100);
-		if(tetherLetOut < 2100){
+		if(tetherLetOut < 110){
 			stepperMotor.setOCR1A(2000);
 		}
 	}
@@ -779,4 +778,3 @@ ISR(TIMER1_COMPA_vect){
 }
 
 MRMain mrMain;
-
