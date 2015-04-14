@@ -689,7 +689,7 @@ void MRMain::processStatusRequest(){
 	int encDist = stepperMotorEncoder.getDistanceTraveled(); //this is in cm
 	//format is: MR winch spooled out, MR battery, CR things...
 	//Thomas actually only wants to send back the spool info so change this later to add other things
-	String send = String(encDist) + "\n";
+	String send = "$S" + String(encDist) + "\n";
 	Serial.print(send);
 	Serial.flush();
 }
