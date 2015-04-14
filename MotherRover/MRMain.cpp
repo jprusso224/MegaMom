@@ -683,10 +683,15 @@ void MRMain::processTransitionCommand(){
  * Blinks and LED 2 times and sends the status acknowledgment to the GS                                                    
  */
 void MRMain::processStatusRequest(){
-		//eventually will actually send data like battery capacity
-		blinkLED(2);
-		Serial.print("$SP\n");
-		Serial.flush();
+	//blinkLED(2);	
+	//send back battery data form the MR and Simulated ones from the MR due to not having done that yet
+	float vb = measureBattery(); //might need to fix for non-broken battery
+	int encDist = stepperMotorEncoder.getDistanceTraveled(); //this is in cm
+	//format is: MR winch spooled out, MR battery, CR things...
+	//Thomas actually only wants to send back the spool info so change this later to add other things
+	String send = String(encDist) + "\n";
+	Serial.print(send);
+	Serial.flush();
 }
 
 void MRMain::autoSpoolOut(int commandLength){
@@ -775,6 +780,14 @@ ISR(TIMER3_OVF_vect){
 ISR(TIMER1_COMPA_vect){
 	
 	//stepperMotor.OCR1A_ISR();
+}
+
+float MRMain::measureBattery(){
+	//these might be wrong after we changed the resistances for the non-broken battery 
+	int adcMeas = analogRead(BATTERY_MEASUREMENT_PIN);
+	float adcVoltage = adcMeas/255*5;
+	float battVoltage = adcVoltage*(R1+R2)/R2;
+	return battVoltage;
 }
 
 MRMain mrMain;

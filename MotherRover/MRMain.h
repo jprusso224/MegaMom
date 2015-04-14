@@ -126,6 +126,11 @@ class MRMain
 	 */
 	void autoReelIn(int commandLength);
 	
+	/**
+	 * Function to read battery                                                   
+	 */
+	float measureBattery();
+	
 };
 
 extern MRMain mrMain;

@@ -49,5 +49,10 @@
 #define ENCODER_RESOLUTION 300.0
 #define ENCODER_DIR_PIN 30
 
+/*Power Measurement*/
+#define R1 12000
+#define R2 5000
+#define BATTERY_MEASUREMENT_PIN A0
+
 #endif
 
