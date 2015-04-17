@@ -162,13 +162,35 @@ void MRMain::processDriveCommand(){
 		/*Determine whether turning or driving*/
 		char driveType;
 		driveType = gsInputString[2];
+		crInputString = "";
 		
 		switch (driveType)
 		{
 			case 'L':
+				Serial3.print(gsInputString);
+				while(!Serial3.available()){
+					//wait for acknowledgement
+				}
+				delay(5);
+				while(Serial3.available() > 0){
+					fromCR = Serial3.read();
+					crInputString+=fromCR;
+				}
+				Serial.print("$DP\n");
 				break;
 			case 'R':
-				break;
+					Serial3.print(gsInputString);
+					while(!Serial3.available()){
+						//wait for acknowledgement
+					}
+					delay(5);
+					while(Serial3.available() > 0){
+						fromCR = Serial3.read();
+						crInputString+=fromCR;
+					}
+					Serial.print("$DP\n");
+					break;
+				
 			case 'B':
 				break;
 			default:
@@ -530,7 +552,10 @@ void MRMain::processAutoRappelCommand(){
  * Uses the stepper motor to reel in the CR. Step count ensures all tether is reeled in.                                                    
  */
 void MRMain::processReturnCommand(){
-	//REEL IN THE CR
+	int dist = stepperMotorEncoder.getDistanceTraveled();
+	autoReelIn(dist);
+	Serial.print("$RUP\n");
+	Serial.flush();
 }
 
 void MRMain::processDeployCommand(){
@@ -685,12 +710,13 @@ void MRMain::processTransitionCommand(){
 void MRMain::processStatusRequest(){
 	//blinkLED(2);	
 	//send back battery data form the MR and Simulated ones from the MR due to not having done that yet
-	float vb = measureBattery(); //might need to fix for non-broken battery
-	int encDist = stepperMotorEncoder.getDistanceTraveled(); //this is in cm
+	//float vb = measureBattery(); //might need to fix for non-broken battery
+	//int encDist = stepperMotorEncoder.getDistanceTraveled(); //this is in cm
 	//format is: MR winch spooled out, MR battery, CR things...
 	//Thomas actually only wants to send back the spool info so change this later to add other things
-	String send = "$S" + String(encDist) + "\n";
-	Serial.print(send);
+	//String send = "$S" + String(encDist) + "\n";
+	//Serial.print(send);
+	Serial.print("$SP\n");
 	Serial.flush();
 }
 
