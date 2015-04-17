@@ -284,6 +284,7 @@ void MRMain::processImageCommand(){
 		//Relay command to CR
 		Serial3.print(gsInputString);
 		Serial3.flush();
+		delay(5);
 		
 		//Stream serial data to GS until finished with image
 		while(!imageRelayed){
