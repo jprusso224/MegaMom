@@ -92,11 +92,12 @@ void MRMain::loop()
  */
 void MRMain::parseCommand(){
 	char commandType;
-		//Serial.println("Command Recevied");
+		//Serial.println("Command Received");
 	commandType = gsInputString[1];
 	switch(commandType){
 		case 'A':
 			processAutoWinchCommand();
+			break;
 		case 'R':
 			if(gsInputString[2] == '0'){
 				processRappelCommand();
