@@ -224,7 +224,7 @@ void MRMain::processDriveCommand(){
 							if(fromCR == '\n'){
 								finished = true;
 								Serial.print(crInputString);
-								Serial.flush();
+								//Serial.flush();
 							}
 						}
 					}
@@ -564,8 +564,8 @@ void MRMain::processDeployCommand(){
 	boolean driveFinished = false;
 	boolean tetherFinished = false;
 	boolean finished = false;
-	int remainder = 30; //cm
-	int driveTether = 65; //cm
+	int remainder = 45; //cm
+	int driveTether = 50; //cm
 	int currentTether = 0;
 	
 	while(!finished){
@@ -574,7 +574,7 @@ void MRMain::processDeployCommand(){
 			currentTether = stepperMotorEncoder.getDistanceTraveled();
 			if(currentTether < driveTether){
 				Serial.println("Deploying Tether");
-				autoSpoolOut(6);
+				autoSpoolOut(7);
 				Serial.println("Driving");
 				processDriveCommand(5, "R");//Careful! Drive command doesn't take a command yet.
 			}else{
@@ -722,6 +722,7 @@ void MRMain::processStatusRequest(){
 }
 
 void MRMain::autoSpoolOut(int commandLength){
+	tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
 	int targetTetherOut = 0;
 	targetTetherOut = tetherLetOut + commandLength;
 	long pulseCount = 0;
@@ -748,6 +749,7 @@ void MRMain::autoSpoolOut(int commandLength){
 }
 
 void MRMain::autoReelIn(int commandLength){
+	tetherLetOut = stepperMotorEncoder.getDistanceTraveled();
 	int targetTetherOut = 0;
 	targetTetherOut = tetherLetOut - commandLength;
 	
